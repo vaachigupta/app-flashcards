@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-export default function DeckCard({ title, cards }) {
+export default function DeckCard({ title, cards, onPress }) {
   return (
-    <TouchableOpacity style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={onPress}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.subtitle}>{cards} cards</Text>
     </TouchableOpacity>
@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 12,
     borderRadius: 10,
-    elevation: 3,
   },
   title: {
     fontSize: 18,
