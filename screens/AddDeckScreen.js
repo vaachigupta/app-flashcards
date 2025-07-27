@@ -1,15 +1,39 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useDecks } from '../context/DeckContext';
+import { saveDeck } from '../utils/storage';
 
-export default function AddDeckScreen({ navigation }) {
+export default function AddDeckScreen() {
   const [title, setTitle] = useState('');
+  const navigation = useNavigation();
+  const { decks, setDecks } = useDecks(); // ✅ context
 
-  const handleAddDeck = () => {
-    if (title.trim() !== '') {
-      // Just for now: navigate to detail page after adding
-      navigation.navigate('DeckDetail', { title, cards: 0 });
-      setTitle('');
+  const handleAddDeck = async () => {
+    const trimmed = title.trim();
+    if (!trimmed) {
+      Alert.alert('Please enter a valid deck title');
+      return;
     }
+
+    const newDeck = {
+      id: Date.now().toString(),
+      title: trimmed,
+      cards: [],
+    };
+
+    const updatedDecks = [...decks, newDeck];
+    setDecks(updatedDecks);
+    await saveDeck(newDeck); // ✅ save to async storage
+    setTitle('');
+    navigation.navigate('Home');
   };
 
   return (
