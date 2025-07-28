@@ -13,9 +13,13 @@ export default function AddCardScreen() {
 
   const { decks, setDecks } = useDecks();
 
+  const newCard = {
+    question,
+    answer,
+    reviewed: false,
+  };
+
   const handleAddCard = async () => {
-    console.log('🔔 handleAddCard() called for deckId=', deckId);
-    console.log("🟩 Adding card:", { question, answer });
     const updatedDecks = decks.map((deck) => {
       if (deck.id === deckId) {
         return {
