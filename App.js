@@ -1,7 +1,6 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, useColorScheme } from 'react-native';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -24,6 +23,8 @@ export default function App() {
     InterBold: require('./assets/fonts/Inter-Bold.ttf'),
   });
 
+  const scheme = useColorScheme();
+
   if (!fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -32,12 +33,27 @@ export default function App() {
     );
   }
 
+  // Define a theme object
+  const isDark = scheme === 'dark';
+  const navTheme = isDark ? DarkTheme : DefaultTheme;
+  const headerBg = isDark ? '#1a1a1a' : '#ffffff';
+  const headerTextColor = isDark ? '#ffffff' : '#000000';
+
   return (
     <ThemeProvider>
       <DeckProvider>
         <SafeAreaProvider>
-          <NavigationContainer>
-            <Stack.Navigator initialRouteName="Home">
+          <NavigationContainer theme={navTheme}>
+            <Stack.Navigator
+              initialRouteName="Home"
+              screenOptions={{
+                headerStyle: { backgroundColor: headerBg },
+                headerTintColor: headerTextColor,
+                headerTitleStyle: {
+                  fontFamily: 'InterBold',
+                },
+              }}
+            >
               <Stack.Screen name="Home" component={HomeScreen} />
               <Stack.Screen name="DeckDetail" component={DeckDetailScreen} />
               <Stack.Screen name="AddDeck" component={AddDeckScreen} />

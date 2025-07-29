@@ -1,43 +1,32 @@
-import React, { useLayoutEffect } from 'react';
-import {
-  ScrollView,
-  View,
-  Text,
-  Button,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import {
-  useRoute,
-  useNavigation,
-  StackActions,
-} from '@react-navigation/native';
+import { useLayoutEffect } from 'react';
+import { ScrollView, View, Text, Alert, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRoute, useNavigation} from '@react-navigation/native';
 import { useDecks } from '../context/DeckContext';
 import { saveAllDecks } from '../utils/storage';
+import { useTheme as useAppTheme } from '../context/ThemeContext';
 
 export default function DeckDetailScreen() {
   const route = useRoute();
   const navigation = useNavigation();
-
-  // Override header back button
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <Button
-          title="Back to Home"
-          onPress={() => navigation.dispatch(StackActions.popToTop())}
-        />
-      ),
-    });
-  }, [navigation]);
-
+  const { isDark } = useAppTheme();
   const { id, title } = route.params;
   const { decks, setDecks } = useDecks();
 
   const currentDeck = decks.find((deck) => deck.id === id) || { cards: [] };
   const cards = Array.isArray(currentDeck.cards) ? currentDeck.cards : [];
 
-  // Delete the entire deck
+  useLayoutEffect(() => {
+      navigation.setOptions({
+        headerStyle: {
+          backgroundColor: isDark ? '#1e1d1dff' : '#ffffff',
+        },
+        headerTintColor: isDark ? '#ffffff' : '#000000',
+        headerTitleStyle: {
+          fontFamily: 'InterBold',
+        },
+      });
+    }, [navigation, isDark]);
+
   const handleDeleteDeck = () => {
     Alert.alert(
       'Delete Deck',
@@ -52,7 +41,7 @@ export default function DeckDetailScreen() {
               const updated = decks.filter((d) => d.id !== id);
               setDecks(updated);
               await saveAllDecks(updated);
-              navigation.navigate('Home');
+              navigation.replace('Home');
             })();
           },
         },
@@ -60,7 +49,6 @@ export default function DeckDetailScreen() {
     );
   };
 
-  // Delete a single card by index
   const handleDeleteCard = (cardIndex) => {
     Alert.alert(
       'Delete Card',
@@ -90,57 +78,86 @@ export default function DeckDetailScreen() {
   };
 
   const reviewedCount = cards.filter((c) => c.reviewed).length;
-  const reviewedPercent = cards.length > 0
-    ? Math.round((reviewedCount / cards.length) * 100)
-    : 0;
+  const reviewedPercent =
+    cards.length > 0
+      ? Math.round((reviewedCount / cards.length) * 100)
+      : 0;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>{cards.length} cards</Text>
+    <ScrollView
+      style={{ backgroundColor: isDark ? '#1a181fff' : '#ffffff' }}
+      contentContainerStyle={styles.container}
+    >
+      <Text style={[styles.title, { color: isDark ? '#fff' : '#000' }]}>{title}</Text>
+      <Text style={[styles.subtitle, { color: isDark ? '#ccc' : '#666' }]}>
+        {cards.length} cards
+      </Text>
 
       <View style={{ marginVertical: 12 }}>
-        <Text>Total Cards: {cards.length}</Text>
-        <Text>Reviewed: {reviewedPercent}%</Text>
+        <Text style={{ color: isDark ? '#fff' : '#000' }}>
+          Total Cards: {cards.length}
+        </Text>
+        <Text style={{ color: isDark ? '#fff' : '#000' }}>
+          Reviewed: {reviewedPercent}%
+        </Text>
       </View>
 
       <View style={styles.buttonGroup}>
-        <Button
-          title="Add Card"
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: isDark ? '#60a47dff' : '#b8f2d0ff' }]}
           onPress={() => navigation.navigate('AddCard', { deckId: id })}
-        />
-        <Button
-          title="Generate Cards"
-          onPress={() =>
-            navigation.navigate('GenerateCards', { deckId: id })
-          }
-        />
-        <Button
-          title="Review Cards"
+        >
+          <Text style={[styles.buttonText, { color: isDark ? '#fff' : '#111' }]}>Add Card</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: isDark ? '#c0b540ff' : '#FFF4CC' }]}
+          onPress={() => navigation.navigate('GenerateCards', { deckId: id })}
+        >
+          <Text style={[styles.buttonText, { color: isDark ? '#fff' : '#111' }]}>Generate Cards</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: isDark ? '#4f83b4ff' : '#cae4ffff' }]}
           onPress={() => navigation.navigate('Review', { deckId: id })}
-        />
-        <Button
-          title="Delete Deck"
-          color="red"
+        >
+          <Text style={[styles.buttonText, { color: isDark ? '#fff' : '#111' }]}>Review Cards</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: isDark ? '#cd6b60ff' : '#fcb7b7ff' }]}
           onPress={handleDeleteDeck}
-        />
-       </View>
+        >
+          <Text style={[styles.buttonText, { color: isDark ? '#fff' : '#111' }]}>Delete Deck</Text>
+        </TouchableOpacity>
+      </View>
 
       {cards.map((item, idx) => (
-        <View key={idx} style={styles.cardRow}>
-          <View style={styles.cardText}>
-            <Text style={styles.question}>Q: {String(item.question)}</Text>
-            <Text style={styles.answer}>A: {String(item.answer)}</Text>
+        <View
+          key={idx}
+          style={[
+            styles.cardRow,
+            { backgroundColor: isDark ? '#3a3a3a' : '#f0f0f0' },
+          ]}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.question, { color: isDark ? '#fff' : '#000' }]}>
+              Q: {String(item.question)}
+            </Text>
+            <Text style={[styles.answer, { color: isDark ? '#aaa' : '#555' }]}>
+              A: {String(item.answer)}
+            </Text>
           </View>
-          <Button
-            title="Edit"
+          <TouchableOpacity
             onPress={() => navigation.navigate('EditCard', { deckId: id, cardIndex: idx })}
-          />
-          <Button
-            title="Delete"
-            color="red"
-            onPress={() => handleDeleteCard(idx)}
-          />
+          >
+            <Text style={{ color: isDark ? '#9b7bd3ff' : '#9884fbff'}}>
+              Edit
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleDeleteCard(idx)}>
+            <Text style={{ color: '#e16868ff' }}>Delete</Text>
+          </TouchableOpacity>
         </View>
       ))}
     </ScrollView>
@@ -150,36 +167,47 @@ export default function DeckDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#fff',
+    paddingBottom: 40,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontFamily: 'InterBold',
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 16,
-    color: 'gray',
+    fontSize: 14,
+    fontFamily: 'Inter',
     marginBottom: 12,
   },
   buttonGroup: {
+    gap: 12,
     marginBottom: 20,
+  },
+  button: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontFamily: 'InterBold',
+    fontSize: 15,
   },
   cardRow: {
     flexDirection: 'row',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
     alignItems: 'center',
-    marginBottom: 10,
-  },
-  cardText: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 12,
+    gap: 12,
   },
   question: {
-    fontWeight: 'bold',
+    fontFamily: 'InterBold',
+    fontSize: 15,
     marginBottom: 4,
   },
   answer: {
-    color: '#555',
+    fontFamily: 'Inter',
+    fontSize: 14,
   },
 });
